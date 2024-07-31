@@ -18,7 +18,7 @@ pub struct BLEServer {
   connections: heapless::Vec<u16, MAX_CONNECTIONS>,
   indicate_wait: [u16; MAX_CONNECTIONS],
 
-  on_connect: Option<Box<dyn FnMut(&mut Self, &BLEConnDesc) + Send + Sync>>,
+  on_connect: Option<Box<dyn FnMut(&mut Self, BLEConnDesc) + Send + Sync>>,
   on_disconnect: Option<Box<dyn FnMut(&BLEConnDesc, Result<(), BLEError>) + Send + Sync>>,
   on_passkey_request: Option<Box<dyn Fn() -> u32 + Send + Sync>>,
   on_confirm_pin: Option<Box<dyn Fn(u32) -> bool + Send + Sync>>,
@@ -44,7 +44,7 @@ impl BLEServer {
 
   pub fn on_connect(
     &mut self,
-    callback: impl FnMut(&mut Self, &BLEConnDesc) + Send + Sync + 'static,
+    callback: impl FnMut(&mut Self, BLEConnDesc) + Send + Sync + 'static,
   ) -> &mut Self {
     self.on_connect = Some(Box::new(callback));
     self
@@ -258,7 +258,7 @@ impl BLEServer {
             let server = UnsafeCell::new(server);
             unsafe {
               if let Some(callback) = (*server.get()).on_connect.as_mut() {
-                callback(*server.get(), &desc);
+                callback(*server.get(), desc);
               }
             }
           }
