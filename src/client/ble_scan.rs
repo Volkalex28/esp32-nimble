@@ -3,6 +3,7 @@ use crate::{ble, enums::*, utilities::voidp_to_ref, BLEAdvertisedDevice, BLEErro
 use alloc::sync::Arc;
 use alloc::{boxed::Box, vec::Vec};
 use core::ffi::c_void;
+use esp_idf_svc::sys as esp_idf_sys;
 
 pub struct BLEScan {
   #[allow(clippy::type_complexity)]
@@ -208,6 +209,8 @@ impl BLEScan {
         let data = unsafe { core::slice::from_raw_parts(disc.data, disc.length_data as _) };
         ::log::debug!("DATA: {:X?}", data);
         advertised_device.parse_advertisement(data);
+
+        advertised_device.update_rssi(disc.rssi);
 
         if let Some(callback) = on_result {
           if scan.scan_params.passive() != 0
